@@ -1,5 +1,9 @@
 package com.example.taller.ui;
 
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import android.content.pm.PackageManager;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -8,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import com.example.taller.R;
 import com.example.taller.data.Cliente;
+import android.widget.Toast;
 
 public class ClienteDetailActivity extends AppCompatActivity {
 
@@ -34,8 +39,14 @@ public class ClienteDetailActivity extends AppCompatActivity {
         ((TextView) findViewById(R.id.tv_notas)).setText(c.notas);
 
         findViewById(R.id.btn_llamar).setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + c.telefono));
-            startActivity(intent);
+            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.CALL_PHONE)
+                    == PackageManager.PERMISSION_GRANTED) {
+                Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + c.telefono));
+                startActivity(intent);
+            } else {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{android.Manifest.permission.CALL_PHONE}, 1);
+            }
         });
 
         findViewById(R.id.btn_whatsapp).setOnClickListener(v -> {
@@ -45,8 +56,14 @@ public class ClienteDetailActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onSupportNavigateUp() {
-        finish();
-        return true;
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 1 && grantResults.length > 0
+                && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(this, "Permiso concedido, toca Llamar de nuevo", Toast.LENGTH_SHORT).show();
+
+        }
+
     }
 }
